@@ -1,0 +1,16 @@
+{
+  "id": "/lahza/",
+  "name": "Лаҳза — Суратҳо ва лаҳзаҳо",
+  "short_name": "Лаҳза",
+  "description": "Шабакаи суратҳо: пост, сторис, лайк, шарҳ ва профил.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "categories": ["social", "photo"],
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="tg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<meta name="description" content="Лаҳза — шабакаи суратҳо: пост, сторис, лайк, шарҳ ва профил.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<title>Лаҳза</title>
+<style>
+:root{
+  --bg:#fff;--surface:#fff;--ink:#0f1115;--muted:#6b7280;--line:#e6e8ec;--soft:#f3f4f6;
+  --accent:#e11d48;--link:#2563eb;
+  --ring:linear-gradient(45deg,#f59e0b,#e11d48 55%,#7c3aed);
+  --nav-h:56px;--top-h:52px;
+}
+body.dark{--bg:#0b0c0f;--surface:#121318;--ink:#f3f4f6;--muted:#9ca3af;--line:#25272e;--soft:#1b1d23;--link:#60a5fa}
+[hidden]{display:none!important}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+input,textarea{font:inherit;color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%}
+textarea{resize:none}
+input:focus,textarea:focus{outline:2px solid var(--link);outline-offset:-1px}
+button:focus-visible{outline:2px solid var(--link);outline-offset:2px;border-radius:6px}
+svg{display:block}
+.app{max-width:470px;margin:0 auto;min-height:100vh;min-height:100dvh;border-left:1px solid var(--line);border-right:1px solid var(--line);background:var(--bg);position:relative;padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom))}
+@media (max-width:470px){.app{border:0}}
+
+/* top bar */
+.topbar{position:sticky;top:0;z-index:20;height:var(--top-h);display:flex;align-items:center;justify-content:space-between;padding:0 14px;background:var(--bg);border-bottom:1px solid var(--line)}
+.logo{font-size:24px;font-weight:800;letter-spacing:-.5px;background:var(--ring);-webkit-background-clip:text;background-clip:text;color:transparent}
+.topbar h1{font-size:17px;margin:0;font-weight:700}
+.icon-btn{width:40px;height:40px;display:grid;place-items:center;border-radius:10px;position:relative}
+.icon-btn:active{background:var(--soft)}
+.dot{position:absolute;top:8px;right:8px;width:8px;height:8px;border-radius:50%;background:var(--accent)}
+
+/* bottom nav */
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:470px;z-index:30;height:calc(var(--nav-h) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);display:flex;justify-content:space-around;align-items:center;background:var(--bg);border-top:1px solid var(--line)}
+.nav button{width:52px;height:44px;display:grid;place-items:center;position:relative}
+.nav button.active svg{stroke-width:2.6}
+.nav .mini-ava{width:26px;height:26px;border-radius:50%;object-fit:cover;border:2px solid transparent}
+.nav button.active .mini-ava{border-color:var(--ink)}
+
+.page{display:none}.page.active{display:block}
+
+/* avatar */
+.ava{border-radius:50%;object-fit:cover;background:var(--soft);flex:none}
+.ring{padding:2px;border-radius:50%;background:var(--ring);display:inline-block}
+.ring.seen{background:var(--line)}
+.ring>.inner{display:block;padding:2px;border-radius:50%;background:var(--bg)}
+.ring .ava{display:block}
+
+/* stories */
+.stories{display:flex;gap:14px;overflow-x:auto;padding:12px 14px;border-bottom:1px solid var(--line);scrollbar-width:none}
+.stories::-webkit-scrollbar{display:none}
+.story{display:flex;flex-direction:column;align-items:center;gap:4px;width:68px;flex:none}
+.story span{font-size:12px;max-width:68px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)}
+.story .add-wrap{position:relative}
+.story button{display:block;line-height:0}
+.story .plus{position:absolute;right:0;bottom:0;width:22px;height:22px;border-radius:50%;background:var(--link);color:#fff;border:2px solid var(--bg);display:grid;place-items:center;font-weight:800;font-size:15px;line-height:1}
+
+/* posts */
+.post{border-bottom:1px solid var(--line);padding-bottom:10px}
+.post-head{display:flex;align-items:center;gap:10px;padding:10px 12px}
+.post-head .who{flex:1;min-width:0}
+.post-head .name{font-weight:700;font-size:14px}
+.post-head .loc{font-size:12px;color:var(--muted)}
+.media{position:relative;background:var(--soft);user-select:none;-webkit-user-select:none;overflow:hidden}
+.media img{width:100%;display:block;max-height:585px;object-fit:cover}
+.big-heart{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;opacity:0}
+.big-heart.go{animation:pop .8s ease-out}
+@keyframes pop{0%{opacity:0;transform:scale(.4)}15%{opacity:1;transform:scale(1.15)}30%{transform:scale(1)}75%{opacity:1}100%{opacity:0;transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.big-heart.go{animation:fade .6s}@keyframes fade{0%,60%{opacity:1}100%{opacity:0}}}
+.actions{display:flex;align-items:center;gap:6px;padding:6px 8px 0}
+.actions .sp{flex:1}
+.actions button{width:40px;height:40px;display:grid;place-items:center}
+.liked svg{fill:var(--accent);stroke:var(--accent)}
+.saved svg{fill:var(--ink)}
+.likes{font-weight:700;font-size:14px;padding:0 14px}
+.caption{padding:4px 14px 0;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}
+.caption b{margin-right:5px}
+.tag{color:var(--link);cursor:pointer}
+.more-comments{padding:4px 14px 0;color:var(--muted);font-size:14px;display:block}
+.time{padding:4px 14px 0;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.3px}
+
+/* grid */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.grid button{aspect-ratio:1;position:relative;overflow:hidden;background:var(--soft)}
+.grid img{width:100%;height:100%;object-fit:cover;display:block}
+.grid .ov{position:absolute;inset:0;background:#0007;color:#fff;display:none;align-items:center;justify-content:center;gap:14px;font-weight:700;font-size:14px}
+@media (hover:hover){.grid button:hover .ov{display:flex}}
+
+/* explore */
+.search{padding:10px 12px;position:sticky;top:0;background:var(--bg);z-index:5}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:0 12px 10px;scrollbar-width:none}
+.chip{border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13px;white-space:nowrap}
+.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.user-row{display:flex;align-items:center;gap:12px;padding:8px 14px;width:100%;text-align:left}
+.user-row .n{font-weight:700;font-size:14px}.user-row .s{color:var(--muted);font-size:13px}
+
+/* profile */
+.prof{padding:16px 16px 8px}
+.prof-top{display:flex;align-items:center;gap:22px}
+.stats{flex:1;display:flex;justify-content:space-around;text-align:center}
+.stats b{display:block;font-size:17px}.stats span{font-size:13px;color:var(--muted)}
+.bio{margin-top:12px;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}
+.bio b{display:block}
+.prof-btns{display:flex;gap:8px;margin-top:14px}
+.btn{flex:1;background:var(--soft);border-radius:9px;padding:8px 12px;font-weight:650;font-size:14px;text-align:center}
+.btn.primary{background:var(--link);color:#fff}
+.btn.danger{color:#dc2626}
+.tabs{display:flex;border-top:1px solid var(--line);margin-top:8px}
+.tabs button{flex:1;height:46px;display:grid;place-items:center;color:var(--muted);border-top:1px solid transparent;margin-top:-1px}
+.tabs button.on{color:var(--ink);border-top-color:var(--ink)}
+
+.empty{text-align:center;padding:48px 24px;color:var(--muted)}
+.empty h3{color:var(--ink);margin:12px 0 6px;font-size:18px}
+.empty .circle{width:72px;height:72px;margin:0 auto;border:2px solid var(--ink);border-radius:50%;display:grid;place-items:center;color:var(--ink)}
+.empty .btn{display:inline-block;flex:none;margin-top:14px}
+
+/* activity */
+.act{display:flex;align-items:center;gap:12px;padding:10px 14px}
+.act p{margin:0;flex:1;font-size:14px;overflow-wrap:anywhere}
+.act .t{color:var(--muted)}
+.act img.th{width:44px;height:44px;object-fit:cover;flex:none}
+.sec-h{padding:14px 14px 4px;font-weight:700;font-size:15px}
+
+/* sheets & modals */
+.overlay{position:fixed;inset:0;background:#0009;z-index:50;display:none;align-items:flex-end;justify-content:center}
+.overlay.open{display:flex}
+.sheet{background:var(--surface);width:100%;max-width:470px;max-height:88dvh;border-radius:16px 16px 0 0;display:flex;flex-direction:column;animation:up .22s ease-out;padding-bottom:env(safe-area-inset-bottom)}
+@keyframes up{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.sheet{animation:none}}
+.sheet-h{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--line);gap:8px}
+.sheet-h h2{font-size:16px;margin:0;flex:1;text-align:center}
+.sheet-h .txt-btn{color:var(--link);font-weight:700;padding:6px 8px;min-width:64px}
+.sheet-h .txt-btn:disabled{opacity:.4}
+.sheet-b{overflow-y:auto;flex:1}
+.full .sheet{max-height:100dvh;height:100dvh;border-radius:0}
+.menu button{display:block;width:100%;padding:15px;text-align:center;border-bottom:1px solid var(--line);font-size:15px}
+.menu button.red{color:#dc2626;font-weight:700}
+.comment{display:flex;gap:10px;padding:10px 14px}
+.comment p{margin:0;font-size:14px;flex:1;overflow-wrap:anywhere;white-space:pre-wrap}
+.comment small{display:block;color:var(--muted);font-size:12px;margin-top:3px}
+.comment .del{color:var(--muted);font-size:12px;margin-left:10px}
+.c-form{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--line);align-items:center}
+.c-form input{border-radius:999px}
+.c-form button{color:var(--link);font-weight:700;padding:6px}
+.c-form button:disabled{opacity:.4}
+
+/* create */
+.preview{background:#000;position:relative}
+.preview img{width:100%;display:block;max-height:60dvh;object-fit:contain;margin:auto}
+.filters{display:flex;gap:10px;overflow-x:auto;padding:12px;scrollbar-width:none}
+.filters button{flex:none;width:76px;text-align:center;font-size:12px;color:var(--muted)}
+.filters button img{width:76px;height:76px;object-fit:cover;border-radius:6px;margin-bottom:5px;border:2px solid transparent}
+.filters button.on{color:var(--ink);font-weight:700}
+.filters button.on img{border-color:var(--link)}
+.field{padding:8px 12px}
+.field label{display:block;font-size:13px;font-weight:650;margin-bottom:5px}
+.pick{padding:40px 20px;text-align:center}
+.pick .btn{display:inline-block;flex:none;padding:10px 18px;margin-top:16px}
+.seg{display:flex;gap:6px;padding:0 12px 4px}
+.seg button{flex:1;padding:7px;border-radius:8px;background:var(--soft);font-size:13px;font-weight:650}
+.seg button.on{background:var(--ink);color:var(--bg)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+
+/* story viewer */
+.viewer{position:fixed;inset:0;background:#000;z-index:60;display:none;color:#fff}
+.viewer.open{display:block}
+.viewer .stage{position:absolute;inset:0;max-width:470px;margin:auto}
+#vImg{width:100%;height:100%;object-fit:contain}
+.bars{position:absolute;top:10px;left:10px;right:10px;display:flex;gap:4px;z-index:2}
+.bars div{flex:1;height:3px;background:#ffffff55;border-radius:2px;overflow:hidden}
+.bars i{display:block;height:100%;width:0;background:#fff}
+.v-head{position:absolute;top:22px;left:12px;right:12px;display:flex;align-items:center;gap:10px;z-index:2;text-shadow:0 1px 3px #0008}
+.v-head .n{font-weight:700;font-size:14px}.v-head .t{opacity:.8;font-size:13px;flex:1}
+.v-head button{color:#fff;width:40px;height:40px;display:grid;place-items:center}
+.v-tap{position:absolute;top:70px;bottom:0;width:35%;z-index:1}
+.v-tap.l{left:0}.v-tap.r{right:0;width:65%}
+
+/* onboarding */
+.onb{padding:40px 24px;max-width:400px;margin:auto}
+.onb .logo{font-size:44px;text-align:center;display:block}
+.onb p{text-align:center;color:var(--muted)}
+.onb form{display:grid;gap:12px;margin-top:24px}
+.onb .ava-pick{display:flex;flex-direction:column;align-items:center;gap:8px}
+.onb .ava-pick button{color:var(--link);font-weight:650;font-size:14px}
+.err{color:#dc2626;font-size:13px;margin-top:4px;min-height:1em}
+
+.toast{position:fixed;left:50%;bottom:calc(var(--nav-h) + 16px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;z-index:90;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90vw}
+.toast.show{opacity:1}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <!-- Onboarding -->
+  <section class="page" id="p-onb">
+    <div class="onb">
+      <span class="logo">Лаҳза</span>
+      <p>Лаҳзаҳои зиндагиатонро бо суратҳо нигоҳ доред ва мубодила кунед.</p>
+      <form id="onbForm" novalidate>
+        <div class="ava-pick">
+          <img id="onbAva" class="ava" width="88" height="88" alt="Сурати профил">
+          <button type="button" id="onbAvaBtn">Интихоби сурати профил</button>
+        </div>
+        <div>
+          <label for="onbName" style="font-size:13px;font-weight:650">Ном</label>
+          <input id="onbName" autocomplete="name" placeholder="масалан, Асрор Содиқов">
+        </div>
+        <div>
+          <label for="onbUser" style="font-size:13px;font-weight:650">Номи корбар</label>
+          <input id="onbUser" autocomplete="username" placeholder="масалан, asror_s" autocapitalize="off">
+          <div class="err" id="onbErr"></div>
+        </div>
+        <button class="btn primary" type="submit" style="padding:12px">Сохтани профил</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Home -->
+  <section class="page" id="p-home">
+    <div class="topbar">
+      <span class="logo">Лаҳза</span>
+      <div style="display:flex">
+        <button class="icon-btn" data-go="activity" aria-label="Огоҳиҳо"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.5-9.2C1.2 8.6 3.3 5 6.8 5c2.2 0 3.6 1.2 5.2 3 1.6-1.8 3-3 5.2-3 3.5 0 5.6 3.6 4.3 6.8C19.5 16.4 12 21 12 21z"/></svg><span class="dot" id="actDot" hidden></span></button>
+      </div>
+    </div>
+    <div class="stories" id="stories"></div>
+    <div id="feed"></div>
+  </section>
+
+  <!-- Explore -->
+  <section class="page" id="p-explore">
+    <div class="search"><label class="sr" for="q">Ҷустуҷӯ</label><input id="q" type="search" placeholder="Ҷустуҷӯи одамон ва #ҳештегҳо" autocomplete="off"></div>
+    <div class="chips" id="chips"></div>
+    <div id="exploreUsers"></div>
+    <div class="grid" id="exploreGrid"></div>
+  </section>
+
+  <!-- Activity -->
+  <section class="page" id="p-activity">
+    <div class="topbar"><button class="icon-btn" data-go="home" aria-label="Бозгашт"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h1>Огоҳиҳо</h1><span style="width:40px"></span></div>
+    <div id="activity"></div>
+  </section>
+
+  <!-- Profile -->
+  <section class="page" id="p-profile">
+    <div class="topbar">
+      <button class="icon-btn" id="profBack" aria-label="Бозгашт" hidden><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <h1 id="profTitle"></h1>
+      <button class="icon-btn" id="profMenu" aria-label="Танзимот"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    </div>
+    <div id="profile"></div>
+  </section>
+
+  <nav class="nav" id="nav" hidden>
+    <button data-go="home" aria-label="Асосӣ"><svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></button>
+    <button data-go="explore" aria-label="Ҷустуҷӯ"><svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button>
+    <button id="navCreate" aria-label="Пости нав"><svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><path d="M12 8v8M8 12h8"/></svg></button>
+    <button data-go="activity" aria-label="Огоҳиҳо"><svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.5-9.2C1.2 8.6 3.3 5 6.8 5c2.2 0 3.6 1.2 5.2 3 1.6-1.8 3-3 5.2-3 3.5 0 5.6 3.6 4.3 6.8C19.5 16.4 12 21 12 21z"/></svg><span class="dot" id="navDot" hidden></span></button>
+    <button data-go="profile" aria-label="Профил"><img class="mini-ava" id="navAva" alt=""></button>
+  </nav>
+</div>
+
+<!-- generic overlay -->
+<div class="overlay" id="ov" role="dialog" aria-modal="true"><div class="sheet" id="sheet"></div></div>
+
+<!-- story viewer -->
+<div class="viewer" id="viewer" role="dialog" aria-modal="true" aria-label="Сторис">
+  <div class="stage">
+    <img id="vImg" alt="">
+    <div class="bars" id="vBars"></div>
+    <div class="v-head">
+      <img class="ava" id="vAva" width="32" height="32" alt="">
+      <span class="n" id="vName"></span><span class="t" id="vTime"></span>
+      <button id="vDel" aria-label="Нест кардан" hidden><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></button>
+      <button id="vClose" aria-label="Пӯшидан"><svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <button class="v-tap l" id="vPrev" aria-label="Қаблӣ"></button>
+    <button class="v-tap r" id="vNext" aria-label="Баъдӣ"></button>
+  </div>
+</div>
+
+<input type="file" id="filePost" accept="image/*" hidden>
+<input type="file" id="fileStory" accept="image/*" hidden>
+<input type="file" id="fileAva" accept="image/*" hidden>
+<input type="file" id="fileImport" accept="application/json,.json" hidden>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+/* ================= Storage (IndexedDB) ================= */
+const DB_NAME = 'lahza', DB_VER = 1;
+let db;
+function openDB(){
+  return new Promise((res, rej) => {
+    const r = indexedDB.open(DB_NAME, DB_VER);
+    r.onupgradeneeded = () => {
+      const d = r.result;
+      d.createObjectStore('kv');
+      d.createObjectStore('posts', {keyPath:'id'});
+      d.createObjectStore('stories', {keyPath:'id'});
+    };
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+}
+function tx(store, mode, fn){
+  return new Promise((res, rej) => {
+    const t = db.transaction(store, mode), s = t.objectStore(store);
+    let out; const r = fn(s); if (r) r.onsuccess = () => out = r.result;
+    t.oncomplete = () => res(out); t.onerror = () => rej(t.error); t.onabort = () => rej(t.error);
+  });
+}
+const kvGet = k => tx('kv','readonly', s => s.get(k));
+const kvSet = (k,v) => tx('kv','readwrite', s => s.put(v,k));
+const all = st => tx(st,'readonly', s => s.getAll());
+const put = (st,v) => tx(st,'readwrite', s => s.put(v));
+const del = (st,id) => tx(st,'readwrite', s => s.delete(id));
+const clear = st => tx(st,'readwrite', s => s.clear());
+
+/* ================= State ================= */
+const S = {
+  me:null,             // {id,name,username,bio,avatar}
+  users:{},            // id -> user (includes me)
+  following:[],        // ids
+  saved:[],            // post ids
+  notifs:[],           // {id,type,from,postId,text,at,read}
+  posts:[],            // sorted desc
+  stories:[],
+  seenStories:[],
+  dark:false,
+  page:'home', profileId:null, profTab:'posts', exploreTag:'',
+};
+async function saveMeta(){
+  await kvSet('meta', {me:S.me, users:S.users, following:S.following, saved:S.saved, notifs:S.notifs.slice(0,200), seenStories:S.seenStories, dark:S.dark});
+}
+
+/* ================= Helpers ================= */
+const $ = s => document.querySelector(s);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const DAY = 864e5;
+function ago(t){
+  const s = Math.max(0, (Date.now()-t)/1000);
+  if (s < 60) return 'ҳозир';
+  if (s < 3600) return Math.floor(s/60) + ' дақ';
+  if (s < 86400) return Math.floor(s/3600) + ' соат';
+  if (s < 604800) return Math.floor(s/86400) + ' рӯз';
+  return new Date(t).toLocaleDateString('ru-RU', {day:'numeric', month:'short', year:'numeric'});
+}
+function rich(text){ // escape, then link #tags and @mentions
+  return esc(text).replace(/(^|\s)([#@][\p{L}\p{N}_]+)/gu, (m, sp, tag) => `${sp}<span class="tag" data-tag="${tag}">${tag}</span>`);
+}
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2200); }
+const user = id => S.users[id] || {name:'?', username:'unknown', avatar:defaultAva('?')};
+function defaultAva(name){
+  const c = document.createElement('canvas'); c.width = c.height = 160; const x = c.getContext('2d');
+  const hues = [340, 20, 200, 260, 160, 40]; const h = hues[(name.charCodeAt(0)||0) % hues.length];
+  const g = x.createLinearGradient(0,0,160,160); g.addColorStop(0, `hsl(${h} 80% 60%)`); g.addColorStop(1, `hsl(${h+40} 70% 45%)`);
+  x.fillStyle = g; x.fillRect(0,0,160,160);
+  x.fillStyle = '#fff'; x.font = 'bold 72px system-ui,sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
+  x.fillText((name.trim()[0]||'?').toUpperCase(), 80, 86);
+  return c.toDataURL('image/jpeg', .85);
+}
+function ava(u, size, ring){
+  const img = `<img class="ava" src="${esc(u.avatar)}" width="${size}" height="${size}" alt="">`;
+  if (!ring) return img;
+  return `<span class="ring ${ring==='seen'?'seen':''}"><span class="inner">${img}</span></span>`;
+}
+function readFile(f){ return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(f); }); }
+function loadImg(src){ return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; }); }
+/* Resize image; mode: 'square' | 'original' | 'story' (9:16 crop) */
+async function processImage(file, mode, max=1080){
+  const img = await loadImg(await readFile(file));
+  let sw = img.naturalWidth, sh = img.naturalHeight, sx = 0, sy = 0;
+  let ratio = sw/sh;
+  if (mode === 'square') ratio = 1;
+  else if (mode === 'story') ratio = 9/16;
+  else ratio = Math.min(1.91, Math.max(0.8, ratio)); // between 4:5 and 1.91:1
+  if (sw/sh > ratio){ const nw = sh*ratio; sx = (sw-nw)/2; sw = nw; } else { const nh = sw/ratio; sy = (sh-nh)/2; sh = nh; }
+  const W = Math.min(max, Math.round(sw)), H = Math.round(W/ratio);
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  c.getContext('2d').drawImage(img, sx, sy, sw, sh, 0, 0, W, H);
+  return c.toDataURL('image/jpeg', .85);
+}
+const FILTERS = [
+  ['Оддӣ',''], ['Гарм','sepia(.25) saturate(1.3) contrast(1.05)'], ['Сард','hue-rotate(-12deg) saturate(1.1) brightness(1.05)'],
+  ['Равшан','brightness(1.15) contrast(1.1)'], ['Ретро','sepia(.55) contrast(.95) brightness(1.05)'], ['Сиёҳу сафед','grayscale(1) contrast(1.15)'],
+  ['Драма','contrast(1.35) saturate(1.2) brightness(.92)'], ['Мулоим','contrast(.88) brightness(1.1) saturate(.85)'],
+];
+
+/* ================= Demo content ================= */
+function demoImage(seed, w=1080, h=1080){
+  const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d');
+  const r = n => { seed = (seed*9301+49297)%233280; return seed/233280*n; };
+  const h1 = r(360), h2 = (h1+60+r(120))%360;
+  const g = x.createLinearGradient(0,0,w,h); g.addColorStop(0,`hsl(${h1} 70% 62%)`); g.addColorStop(1,`hsl(${h2} 65% 40%)`);
+  x.fillStyle = g; x.fillRect(0,0,w,h);
+  // sun
+  x.fillStyle = `hsla(${(h1+30)%360} 100% 85% / .9)`; x.beginPath(); x.arc(w*(.25+r(.5)), h*(.2+r(.25)), w*(.08+r(.08)), 0, 7); x.fill();
+  // mountains layers
+  for (let L=0; L<3; L++){
+    x.fillStyle = `hsla(${h2} 40% ${30-L*8}% / ${.55+L*.2})`;
+    x.beginPath(); x.moveTo(0,h); let y = h*(.55+L*.12);
+    for (let px=0; px<=w; px+=w/8){ x.lineTo(px, y - r(h*.18)); }
+    x.lineTo(w,h); x.closePath(); x.fill();
+  }
+  return c.toDataURL('image/jpeg', .8);
+}
+async function seedDemo(){
+  const people = [
+    {id:'u_dilnoza', name:'Дилноза Каримова', username:'dilnoza.k', bio:'Сайёҳ 🌍 · Душанбе'},
+    {id:'u_farhod', name:'Фарҳод Раҳимов', username:'farhod_photo', bio:'Аккосӣ ва табиат 📷'},
+    {id:'u_madina', name:'Мадина', username:'madina.art', bio:'Рассом · қаҳва ☕'},
+  ];
+  for (const p of people){ p.avatar = defaultAva(p.name); S.users[p.id] = p; }
+  const caps = [
+    ['u_farhod','Субҳ дар кӯҳҳои Помир 🏔️ #табиат #помир'],
+    ['u_dilnoza','Ғуруби офтоб дар назди Норак 🌅 #сафар #тоҷикистон'],
+    ['u_madina','Ранги имрӯза 🎨 #санъат'],
+    ['u_farhod','Хомӯшии кӯҳҳо... #табиат'],
+    ['u_dilnoza','Ҳафтаи олӣ буд! @madina.art ташаккур 💛 #дӯстон'],
+    ['u_madina','Эскизи нав #санъат #илҳом'],
+  ];
+  const now = Date.now();
+  for (let i=0; i<caps.length; i++){
+    const [uidd, cap] = caps[i];
+    await put('posts', {id:'demo'+i, userId:uidd, image:demoImage(17+i*31), caption:cap, filter:'', createdAt:now - (i+1)*3.7*36e5,
+      likes: people.filter((_,k)=>k!==i%3).map(p=>p.id).filter(id=>id!==uidd),
+      comments: i%2 ? [] : [{id:uid(), userId:people[(i+1)%3].id, text:'Хеле зебо! 😍', createdAt:now - (i+1)*3e6}]});
+  }
+  await put('stories', {id:'ds1', userId:'u_dilnoza', image:demoImage(99,1080,1920), createdAt:now-2*36e5});
+  await put('stories', {id:'ds2', userId:'u_farhod', image:demoImage(123,1080,1920), createdAt:now-5*36e5});
+  await put('stories', {id:'ds3', userId:'u_farhod', image:demoImage(321,1080,1920), createdAt:now-4*36e5});
+  S.following = people.map(p => p.id);
+}
+const DEMO_IDS = ['u_dilnoza','u_farhod','u_madina'];
+const DEMO_REPLIES = ['Зебо! 🔥','Аъло 👏','Чӣ хел зебо!','💛💛💛','Ин куҷост?','Офарин!'];
+/* Simulated reactions on your posts so the app feels alive */
+function simulateReactions(post){
+  const pick = DEMO_IDS.filter(id => S.users[id]).sort(() => Math.random()-.5).slice(0, 1 + Math.floor(Math.random()*3));
+  pick.forEach((id, i) => setTimeout(async () => {
+    const p = S.posts.find(x => x.id === post.id); if (!p) return;
+    if (!p.likes.includes(id)) p.likes.push(id);
+    addNotif({type:'like', from:id, postId:p.id});
+    if (Math.random() < .5){
+      const text = DEMO_REPLIES[Math.floor(Math.random()*DEMO_REPLIES.length)];
+      p.comments.push({id:uid(), userId:id, text, createdAt:Date.now()});
+      addNotif({type:'comment', from:id, postId:p.id, text});
+    }
+    await put('posts', p); await saveMeta(); refreshPost(p.id);
+  }, 4000 + i*5000 + Math.random()*3000));
+}
+function addNotif(n){ S.notifs.unshift({id:uid(), at:Date.now(), read:false, ...n}); updateDots(); if (S.page==='activity') renderActivity(); }
+
+/* ================= Navigation ================= */
+function go(page, opts={}){
+  if (page === 'profile') { S.profileId = opts.id || S.me.id; if (!opts.keepTab) S.profTab = 'posts'; }
+  S.page = page;
+  document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === 'p-'+page));
+  document.querySelectorAll('#nav [data-go]').forEach(b => b.classList.toggle('active', b.dataset.go === page && (page!=='profile' || S.profileId===S.me.id)));
+  $('#nav').hidden = page === 'onb';
+  render(page);
+  if (!opts.noScroll) window.scrollTo(0,0);
+}
+function render(page){
+  if (page==='home'){ renderStories(); renderFeed(); }
+  else if (page==='explore') renderExplore();
+  else if (page==='activity'){ renderActivity(); S.notifs.forEach(n => n.read = true); updateDots(); saveMeta(); }
+  else if (page==='profile') renderProfile();
+}
+function updateDots(){
+  const unread = S.notifs.some(n => !n.read);
+  $('#actDot').hidden = $('#navDot').hidden = !unread;
+}
+
+/* ================= Stories ================= */
+function liveStories(){ return S.stories.filter(s => Date.now() - s.createdAt < DAY).sort((a,b) => a.createdAt - b.createdAt); }
+function storyGroups(){
+  const live = liveStories(), map = new Map();
+  for (const s of live){ if (s.userId===S.me.id || S.following.includes(s.userId)){ if (!map.has(s.userId)) map.set(s.userId, []); map.get(s.userId).push(s); } }
+  const groups = [...map.entries()].map(([userId, items]) => ({userId, items, seen: items.every(i => S.seenStories.includes(i.id))}));
+  groups.sort((a,b) => (a.userId===S.me.id ? -1 : b.userId===S.me.id ? 1 : a.seen - b.seen));
+  return groups;
+}
+function renderStories(){
+  const groups = storyGroups(); const mine = groups.find(g => g.userId===S.me.id);
+  let h = `<div class="story"><button class="add-wrap" id="myStory" aria-label="${mine?'Дидани сторисам':'Илова кардани сторис'}">${mine ? ava(S.me,62,mine.seen?'seen':'ring') : ava(S.me,66)}${mine?'':'<span class="plus">+</span>'}</button><span>Сторисам</span></div>`;
+  for (const g of groups){ if (g.userId===S.me.id) continue; const u = user(g.userId);
+    h += `<div class="story"><button data-story="${g.userId}" aria-label="Сторис: ${esc(u.username)}">${ava(u,62,g.seen?'seen':'ring')}</button><span>${esc(u.username)}</span></div>`; }
+  $('#stories').innerHTML = h;
+  $('#myStory').onclick = () => mine ? openStories(groups, 0) : $('#fileStory').click();
+  $('#myStory').oncontextmenu = e => { e.preventDefault(); $('#fileStory').click(); };
+  document.querySelectorAll('[data-story]').forEach(b => b.onclick = () => openStories(groups, groups.findIndex(g => g.userId===b.dataset.story)));
+}
+const V = {groups:[], gi:0, si:0, t:0, start:0, raf:0, paused:false, DUR:5000};
+function openStories(groups, gi){
+  if (gi < 0) return; V.groups = groups; V.gi = gi; V.si = 0;
+  const g = groups[gi]; const firstUnseen = g.items.findIndex(i => !S.seenStories.includes(i.id)); V.si = firstUnseen > 0 ? firstUnseen : 0;
+  $('#viewer').classList.add('open'); document.body.style.overflow = 'hidden'; showStory();
+}
+function showStory(){
+  const g = V.groups[V.gi], s = g.items[V.si], u = user(g.userId);
+  $('#vImg').src = s.image; $('#vAva').src = u.avatar; $('#vName').textContent = u.username; $('#vTime').textContent = ago(s.createdAt);
+  $('#vDel').hidden = g.userId !== S.me.id;
+  $('#vBars').innerHTML = g.items.map((_,i) => `<div><i style="width:${i<V.si?100:0}%"></i></div>`).join('');
+  if (!S.seenStories.includes(s.id)){ S.seenStories.push(s.id); saveMeta(); }
+  V.start = performance.now(); cancelAnimationFrame(V.raf); tick();
+}
+function tick(){
+  const bar = $('#vBars').children[V.si]?.firstChild; if (!bar) return;
+  const p = Math.min(1, (performance.now() - V.start) / V.DUR); bar.style.width = (p*100)+'%';
+  if (p >= 1) return nextStory();
+  V.raf = requestAnimationFrame(tick);
+}
+function nextStory(){
+  const g = V.groups[V.gi];
+  if (V.si < g.items.length-1) { V.si++; showStory(); }
+  else if (V.gi < V.groups.length-1) { V.gi++; V.si = 0; showStory(); }
+  else closeStories();
+}
+function prevStory(){
+  if (V.si > 0) V.si--; else if (V.gi > 0){ V.gi--; V.si = V.groups[V.gi].items.length-1; }
+  showStory();
+}
+function closeStories(){ cancelAnimationFrame(V.raf); $('#viewer').classList.remove('open'); document.body.style.overflow = ''; if (S.page==='home') renderStories(); }
+$('#vNext').onclick = nextStory; $('#vPrev').onclick = prevStory; $('#vClose').onclick = closeStories;
+$('#vDel').onclick = async () => {
+  const s = V.groups[V.gi].items[V.si]; cancelAnimationFrame(V.raf);
+  if (!confirm('Ин сторисро нест кунем?')) { V.start = performance.now(); tick(); return; }
+  await del('stories', s.id); S.stories = S.stories.filter(x => x.id !== s.id); closeStories(); toast('Сторис нест карда шуд');
+};
+document.addEventListener('keydown', e => {
+  if ($('#viewer').classList.contains('open')){
+    if (e.key==='Escape') closeStories(); else if (e.key==='ArrowRight') nextStory(); else if (e.key==='ArrowLeft') prevStory();
+  } else if (e.key==='Escape' && $('#ov').classList.contains('open')) closeSheet();
+});
+$('#fileStory').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  try {
+    const image = await processImage(f, 'story');
+    const s = {id:uid(), userId:S.me.id, image, createdAt:Date.now()};
+    await put('stories', s); S.stories.push(s); renderStories(); toast('Сторис илова шуд — 24 соат намоён аст');
+  } catch { toast('Суратро кушода натавонистем. Дигарашро интихоб кунед.'); }
+};
+
+/* ================= Feed & posts ================= */
+const ICON = {
+  heart:'<svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.5-9.2C1.2 8.6 3.3 5 6.8 5c2.2 0 3.6 1.2 5.2 3 1.6-1.8 3-3 5.2-3 3.5 0 5.6 3.6 4.3 6.8C19.5 16.4 12 21 12 21z"/></svg>',
+  comment:'<svg width="25" height="25" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12a8.5 8.5 0 0 1-12.6 7.4L3 21l1.6-5.2A8.5 8.5 0 1 1 21 12z"/></svg>',
+  share:'<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 3L11 13M22 3l-7 18-4-8-8-4z"/></svg>',
+  save:'<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 3h12v18l-6-5-6 5z"/></svg>',
+  dots:'<svg width="22" height="22" fill="currentColor" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>',
+  bigHeart:'<svg width="110" height="110" viewBox="0 0 24 24" fill="#fff" style="filter:drop-shadow(0 4px 12px #0006)"><path d="M12 21s-7.5-4.6-9.5-9.2C1.2 8.6 3.3 5 6.8 5c2.2 0 3.6 1.2 5.2 3 1.6-1.8 3-3 5.2-3 3.5 0 5.6 3.6 4.3 6.8C19.5 16.4 12 21 12 21z"/></svg>',
+  grid:'<svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>',
+  camera:'<svg width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M3 8h4l2-3h6l2 3h4v12H3z"/><circle cx="12" cy="13" r="4"/></svg>',
+};
+function postHTML(p){
+  const u = user(p.userId), liked = p.likes.includes(S.me.id), saved = S.saved.includes(p.id);
+  const n = p.comments.length, last = p.comments.slice(-2);
+  return `<article class="post" data-post="${p.id}">
+    <div class="post-head">
+      <button data-user="${p.userId}">${ava(u,34)}</button>
+      <div class="who"><button class="name" data-user="${p.userId}">${esc(u.username)}</button>${p.location?`<div class="loc">${esc(p.location)}</div>`:''}</div>
+      <button class="icon-btn" data-menu="${p.id}" aria-label="Амалҳо">${ICON.dots}</button>
+    </div>
+    <div class="media" data-dbl="${p.id}"><img src="${esc(p.image)}" style="filter:${esc(p.filter||'none')}" alt="${esc(p.caption.slice(0,80)) || 'Сурат'}" loading="lazy"><div class="big-heart">${ICON.bigHeart}</div></div>
+    <div class="actions">
+      <button class="${liked?'liked':''}" data-like="${p.id}" aria-label="${liked?'Лайкро бекор кардан':'Лайк'}" aria-pressed="${liked}">${ICON.heart}</button>
+      <button data-comments="${p.id}" aria-label="Шарҳҳо">${ICON.comment}</button>
+      <button data-share="${p.id}" aria-label="Мубодила">${ICON.share}</button>
+      <span class="sp"></span>
+      <button class="${saved?'saved':''}" data-save="${p.id}" aria-label="${saved?'Аз захира баровардан':'Захира кардан'}" aria-pressed="${saved}">${ICON.save}</button>
+    </div>
+    ${p.likes.length ? `<div class="likes">${p.likes.length} лайк</div>` : ''}
+    ${p.caption ? `<div class="caption"><b>${esc(u.username)}</b>${rich(p.caption)}</div>` : ''}
+    ${n > 2 ? `<button class="more-comments" data-comments="${p.id}">Ҳамаи ${n} шарҳро дидан</button>` : ''}
+    ${last.map(c => `<div class="caption"><b>${esc(user(c.userId).username)}</b>${rich(c.text)}</div>`).join('')}
+    <div class="time">${ago(p.createdAt)}</div>
+  </article>`;
+}
+function renderFeed(){
+  const list = S.posts.filter(p => p.userId===S.me.id || S.following.includes(p.userId));
+  $('#feed').innerHTML = list.length ? list.map(postHTML).join('') :
+    `<div class="empty"><div class="circle">${ICON.camera}</div><h3>Лентаи шумо холӣ аст</h3><p>Аввалин суратро илова кунед ё дар бахши Ҷустуҷӯ одамонро пайравӣ кунед.</p><button class="btn primary" onclick="startCreate()">Илова кардани пост</button></div>`;
+}
+function refreshPost(id){
+  const p = S.posts.find(x => x.id===id);
+  document.querySelectorAll(`[data-post="${id}"]`).forEach(el => { if (p) el.outerHTML = postHTML(p); else el.remove(); });
+  if (S.page==='profile') renderProfile();
+}
+async function toggleLike(id, force){
+  const p = S.posts.find(x => x.id===id); if (!p) return;
+  const i = p.likes.indexOf(S.me.id);
+  if (i >= 0 && force !== true) p.likes.splice(i,1); else if (i < 0) p.likes.push(S.me.id); else return;
+  await put('posts', p); refreshPost(id);
+}
+async function toggleSave(id){
+  const i = S.saved.indexOf(id); if (i>=0) S.saved.splice(i,1); else S.saved.push(id);
+  await saveMeta(); refreshPost(id); toast(i>=0 ? 'Аз захира бароварда шуд' : 'Захира шуд');
+}
+let lastTap = {id:null, t:0};
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-like],[data-save],[data-comments],[data-share],[data-menu],[data-user],[data-dbl],[data-open],[data-tag],[data-go]');
+  if (!t) return;
+  const d = t.dataset;
+  if (d.like) toggleLike(d.like);
+  else if (d.save) toggleSave(d.save);
+  else if (d.comments) openComments(d.comments);
+  else if (d.share) sharePost(d.share);
+  else if (d.menu) postMenu(d.menu);
+  else if (d.user){ closeSheet(); go('profile', {id:d.user}); }
+  else if (d.open) openPost(d.open);
+  else if (d.tag){ closeSheet(); if (d.tag[0]==='@'){ const u = Object.values(S.users).find(u => '@'+u.username===d.tag); if (u) go('profile',{id:u.id}); else toast('Корбар ёфт нашуд'); } else { S.exploreTag = d.tag; $('#q').value = d.tag; go('explore'); } }
+  else if (d.go) go(d.go);
+  else if (d.dbl){
+    const now = Date.now();
+    if (lastTap.id === d.dbl && now - lastTap.t < 350){
+      toggleLike(d.dbl, true);
+      requestAnimationFrame(() => { const hh = document.querySelector(`[data-dbl="${d.dbl}"] .big-heart`); if (hh){ hh.classList.remove('go'); void hh.offsetWidth; hh.classList.add('go'); } });
+      lastTap = {id:null, t:0};
+    } else lastTap = {id:d.dbl, t:now};
+  }
+});
+async function sharePost(id){
+  const p = S.posts.find(x => x.id===id); if (!p) return;
+  try {
+    const blob = await (await fetch(p.image)).blob();
+    const file = new File([blob], 'lahza.jpg', {type:'image/jpeg'});
+    if (navigator.canShare && navigator.canShare({files:[file]})) { await navigator.share({files:[file], text:p.caption}); return; }
+  } catch (err) { if (err && err.name === 'AbortError') return; }
+  const a = document.createElement('a'); a.href = p.image; a.download = 'lahza-' + p.id + '.jpg'; a.click(); toast('Сурат боргирӣ шуд');
+}
+
+/* ================= Sheets ================= */
+function openSheet(html, {full=false}={}){
+  $('#sheet').innerHTML = html; $('#ov').classList.toggle('full', full); $('#ov').classList.add('open'); document.body.style.overflow = 'hidden';
+  S.lastFocus = document.activeElement;
+  setTimeout(() => ($('#sheet').querySelector('[autofocus]') || $('#sheet').querySelector('button,input,textarea'))?.focus(), 30);
+}
+function closeSheet(){ if (!$('#ov').classList.contains('open')) return; $('#ov').classList.remove('open'); document.body.style.overflow = ''; S.lastFocus?.focus?.(); }
+$('#ov').addEventListener('click', e => { if (e.target.id === 'ov') closeSheet(); });
+$('#ov').addEventListener('keydown', e => { // focus trap
+  if (e.key !== 'Tab') return; const f = [...$('#sheet').querySelectorAll('button:not(:disabled),input,textarea')].filter(x => x.offsetParent);
+  if (!f.length) return; if (e.shiftKey && document.activeElement===f[0]){ e.preventDefault(); f.at(-1).focus(); } else if (!e.shiftKey && document.activeElement===f.at(-1)){ e.preventDefault(); f[0].focus(); }
+});
+const closeBtn = `<button class="icon-btn" data-close aria-label="Пӯшидан"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>`;
+$('#sheet').addEventListener('click', e => { if (e.target.closest('[data-close]')) closeSheet(); });
+
+function postMenu(id){
+  const p = S.posts.find(x => x.id===id); if (!p) return; const mine = p.userId === S.me.id;
+  const following = S.following.includes(p.userId);
+  openSheet(`<div class="menu">
+    ${mine ? `<button class="red" id="mDel">Нест кардани пост</button><button id="mEdit">Таҳрири матн</button>` :
+      `<button class="${following?'red':''}" id="mFollow">${following?'Бекор кардани пайравӣ':'Пайравӣ кардан'}</button>`}
+    <button id="mOpen">Кушодани пост</button>
+    <button id="mDl">Боргирии сурат</button>
+    <button data-close>Бекор кардан</button></div>`);
+  if (mine){
+    $('#mDel').onclick = () => confirmDelete(p);
+    $('#mEdit').onclick = () => editCaption(p);
+  } else $('#mFollow').onclick = () => { toggleFollow(p.userId); closeSheet(); };
+  $('#mOpen').onclick = () => openPost(id);
+  $('#mDl').onclick = () => { const a = document.createElement('a'); a.href = p.image; a.download = 'lahza-'+p.id+'.jpg'; a.click(); closeSheet(); };
+}
+function confirmDelete(p){
+  openSheet(`<div style="padding:22px 18px;text-align:center"><h2 style="margin:0 0 8px;font-size:18px">Пост нест карда шавад?</h2><p style="color:var(--muted);margin:0 0 18px">Сурат, лайкҳо ва ${p.comments.length} шарҳ ҳамеша нест мешаванд.</p></div>
+    <div class="menu"><button class="red" id="cDel">Нест кардани пост</button><button data-close>Бекор кардан</button></div>`);
+  $('#cDel').onclick = async () => {
+    await del('posts', p.id); S.posts = S.posts.filter(x => x.id !== p.id); S.saved = S.saved.filter(x => x !== p.id);
+    S.notifs = S.notifs.filter(n => n.postId !== p.id); await saveMeta(); closeSheet(); refreshPost(p.id); toast('Пост нест карда шуд');
+  };
+}
+function editCaption(p){
+  openSheet(`<div class="sheet-h">${closeBtn}<h2>Таҳрири матн</h2><button class="txt-btn" id="eSave">Нигоҳ доштан</button></div>
+    <div class="sheet-b"><div class="field"><label for="eCap">Матн</label><textarea id="eCap" rows="5" maxlength="2200" autofocus>${esc(p.caption)}</textarea></div>
+    <div class="field"><label for="eLoc">Ҷой</label><input id="eLoc" maxlength="60" value="${esc(p.location||'')}"></div></div>`);
+  $('#eSave').onclick = async () => { p.caption = $('#eCap').value.trim(); p.location = $('#eLoc').value.trim(); await put('posts', p); closeSheet(); refreshPost(p.id); toast('Нигоҳ дошта шуд'); };
+}
+function openPost(id){
+  const p = S.posts.find(x => x.id===id); if (!p) return;
+  openSheet(`<div class="sheet-h">${closeBtn}<h2>Пост</h2><span style="width:40px"></span></div><div class="sheet-b" id="postBody">${postHTML(p)}</div>`, {full:true});
+}
+function openComments(id){
+  const p = S.posts.find(x => x.id===id); if (!p) return;
+  const draw = () => {
+    const u = user(p.userId);
+    $('#cList').innerHTML =
+      (p.caption ? `<div class="comment">${ava(u,32)}<p><b>${esc(u.username)}</b> ${rich(p.caption)}<small>${ago(p.createdAt)}</small></p></div><hr style="border:0;border-top:1px solid var(--line);margin:0">` : '') +
+      (p.comments.length ? p.comments.map(c => { const cu = user(c.userId); const canDel = c.userId===S.me.id || p.userId===S.me.id;
+        return `<div class="comment"><button data-user="${c.userId}">${ava(cu,32)}</button><p><b>${esc(cu.username)}</b> ${rich(c.text)}<small>${ago(c.createdAt)}${canDel?`<button class="del" data-cdel="${c.id}">Нест кардан</button>`:''}</small></p></div>`; }).join('')
+        : `<div class="empty" style="padding:30px"><h3>Ҳоло шарҳ нест</h3><p>Аввалин шуда шарҳ нависед.</p></div>`);
+    $('#cList').querySelectorAll('[data-cdel]').forEach(b => b.onclick = async () => { p.comments = p.comments.filter(c => c.id !== b.dataset.cdel); await put('posts', p); draw(); refreshPost(p.id); });
+  };
+  openSheet(`<div class="sheet-h"><span style="width:40px"></span><h2>Шарҳҳо</h2>${closeBtn}</div><div class="sheet-b" id="cList" style="min-height:30dvh"></div>
+    <form class="c-form" id="cForm">${ava(S.me,32)}<label class="sr" for="cIn">Шарҳ</label><input id="cIn" placeholder="Шарҳ нависед…" maxlength="500" autocomplete="off" autofocus><button id="cSend" disabled>Фиристодан</button></form>`);
+  draw();
+  $('#cIn').oninput = () => $('#cSend').disabled = !$('#cIn').value.trim();
+  $('#cForm').onsubmit = async e => {
+    e.preventDefault(); const text = $('#cIn').value.trim(); if (!text) return;
+    p.comments.push({id:uid(), userId:S.me.id, text, createdAt:Date.now()}); await put('posts', p);
+    $('#cIn').value = ''; $('#cSend').disabled = true; draw(); refreshPost(p.id); $('#cList').scrollTop = 1e9;
+  };
+}
+
+/* ================= Create post ================= */
+const C = {file:null, mode:'original', image:null, filter:''};
+function startCreate(){ $('#filePost').click(); }
+$('#navCreate').onclick = () => openSheet(`<div class="menu"><button id="nPost">Пости нав</button><button id="nStory">Сторис</button><button data-close>Бекор кардан</button></div>`);
+document.addEventListener('click', e => { if (e.target.id==='nPost'){ closeSheet(); startCreate(); } else if (e.target.id==='nStory'){ closeSheet(); $('#fileStory').click(); } });
+$('#filePost').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  C.file = f; C.mode = 'original'; C.filter = '';
+  try { C.image = await processImage(f, C.mode); } catch { return toast('Суратро кушода натавонистем. Дигарашро интихоб кунед.'); }
+  createSheet();
+};
+function createSheet(){
+  openSheet(`<div class="sheet-h">${closeBtn}<h2>Пости нав</h2><button class="txt-btn" id="pShare">Нашр кардан</button></div>
+    <div class="sheet-b">
+      <div class="preview"><img id="pImg" src="${C.image}" style="filter:${C.filter||'none'}" alt="Пешнамоиш"></div>
+      <div class="seg" style="padding-top:10px" role="group" aria-label="Шакл"><button data-mode="original" class="${C.mode==='original'?'on':''}">Аслӣ</button><button data-mode="square" class="${C.mode==='square'?'on':''}">Мураббаъ</button></div>
+      <div class="filters" id="pFilters">${FILTERS.map(([n,f]) => `<button data-f="${f}" class="${f===C.filter?'on':''}"><img src="${C.image}" style="filter:${f||'none'}" alt="">${n}</button>`).join('')}</div>
+      <div class="field"><label for="pCap">Матн</label><textarea id="pCap" rows="3" maxlength="2200" placeholder="Чизе нависед… #ҳештег @корбар"></textarea></div>
+      <div class="field"><label for="pLoc">Ҷой</label><input id="pLoc" maxlength="60" placeholder="масалан, Душанбе"></div>
+      <div style="height:16px"></div>
+    </div>`, {full:true});
+  $('#pFilters').onclick = e => { const b = e.target.closest('[data-f]'); if (!b) return; C.filter = b.dataset.f; $('#pImg').style.filter = C.filter || 'none'; $('#pFilters').querySelectorAll('button').forEach(x => x.classList.toggle('on', x===b)); };
+  $('#sheet').querySelectorAll('[data-mode]').forEach(b => b.onclick = async () => {
+    const cap = $('#pCap').value, loc = $('#pLoc').value; C.mode = b.dataset.mode; C.image = await processImage(C.file, C.mode); createSheet(); $('#pCap').value = cap; $('#pLoc').value = loc;
+  });
+  $('#pShare').onclick = async () => {
+    $('#pShare').disabled = true;
+    const p = {id:uid(), userId:S.me.id, image:C.image, filter:C.filter, caption:$('#pCap').value.trim(), location:$('#pLoc').value.trim(), createdAt:Date.now(), likes:[], comments:[]};
+    try { await put('posts', p); } catch { $('#pShare').disabled = false; return toast('Ҷой дар хотира намерасад. Якчанд постро нест кунед ва боз кӯшиш кунед.'); }
+    S.posts.unshift(p); closeSheet(); go('home'); toast('Пост нашр шуд'); simulateReactions(p);
+  };
+}
+
+/* ================= Explore ================= */
+function renderExplore(){
+  const q = $('#q').value.trim().toLowerCase();
+  const tags = {}; S.posts.forEach(p => (p.caption.match(/#[\p{L}\p{N}_]+/gu)||[]).forEach(t => tags[t.toLowerCase()] = (tags[t.toLowerCase()]||0)+1));
+  const top = Object.entries(tags).sort((a,b) => b[1]-a[1]).slice(0,10).map(x => x[0]);
+  $('#chips').innerHTML = top.map(t => `<button class="chip ${q===t?'on':''}" data-chip="${esc(t)}">${esc(t)}</button>`).join('');
+  $('#chips').querySelectorAll('[data-chip]').forEach(b => b.onclick = () => { $('#q').value = $('#q').value.toLowerCase()===b.dataset.chip ? '' : b.dataset.chip; renderExplore(); });
+  let users = [];
+  if (q && q[0] !== '#') users = Object.values(S.users).filter(u => u.username.toLowerCase().includes(q.replace(/^@/,'')) || u.name.toLowerCase().includes(q));
+  $('#exploreUsers').innerHTML = users.map(u => `<button class="user-row" data-user="${u.id}">${ava(u,44)}<span><span class="n">${esc(u.username)}</span><br><span class="s">${esc(u.name)}${u.id===S.me.id?' · шумо':S.following.includes(u.id)?' · пайравӣ мекунед':''}</span></span></button>`).join('');
+  let posts = S.posts;
+  if (q) posts = posts.filter(p => p.caption.toLowerCase().includes(q) || (p.location||'').toLowerCase().includes(q) || user(p.userId).username.toLowerCase().includes(q.replace(/^@/,'')));
+  $('#exploreGrid').innerHTML = gridHTML(posts);
+  $('#exploreUsers').insertAdjacentHTML('beforeend', (!posts.length && !users.length) ? `<div class="empty"><h3>Чизе ёфт нашуд</h3><p>Барои «${esc(q)}» натиҷа нест. Калимаи дигарро санҷед.</p></div>` : '');
+}
+let qT; $('#q').addEventListener('input', () => { clearTimeout(qT); qT = setTimeout(renderExplore, 150); });
+function gridHTML(posts){
+  return posts.map(p => `<button data-open="${p.id}" aria-label="Кушодани пост"><img src="${esc(p.image)}" style="filter:${esc(p.filter||'none')}" alt="" loading="lazy"><span class="ov"><span>♥ ${p.likes.length}</span><span>💬 ${p.comments.length}</span></span></button>`).join('');
+}
+
+/* ================= Activity ================= */
+function renderActivity(){
+  const today = S.notifs.filter(n => Date.now()-n.at < DAY), older = S.notifs.filter(n => Date.now()-n.at >= DAY);
+  const row = n => { const u = user(n.from), p = S.posts.find(x => x.id===n.postId);
+    const txt = n.type==='like' ? 'пости шуморо писандид.' : n.type==='comment' ? `шарҳ навишт: ${esc(n.text)}` : 'ба шумо пайравӣ кард.';
+    return `<div class="act"><button data-user="${n.from}">${ava(u,44)}</button><p><b>${esc(u.username)}</b> ${txt} <span class="t">${ago(n.at)}</span></p>${p?`<button data-open="${p.id}"><img class="th" src="${esc(p.image)}" style="filter:${esc(p.filter||'none')}" alt=""></button>`:''}</div>`; };
+  $('#activity').innerHTML = S.notifs.length
+    ? (today.length ? `<div class="sec-h">Имрӯз</div>${today.map(row).join('')}` : '') + (older.length ? `<div class="sec-h">Пештар</div>${older.map(row).join('')}` : '')
+    : `<div class="empty"><div class="circle">${ICON.heart}</div><h3>Ҳоло огоҳӣ нест</h3><p>Вақте ки касе постҳои шуморо писандад ё шарҳ нависад, инҷо мебинед.</p><button class="btn primary" onclick="startCreate()">Илова кардани пост</button></div>`;
+}
+
+/* ================= Profile ================= */
+async function toggleFollow(id){
+  const i = S.following.indexOf(id);
+  if (i >= 0) S.following.splice(i,1); else { S.following.push(id); }
+  await saveMeta(); if (S.page==='profile') renderProfile(); toast(i>=0 ? 'Пайравӣ бекор шуд' : 'Шумо акнун пайравӣ мекунед');
+}
+function renderProfile(){
+  const u = user(S.profileId), isMe = u.id === S.me.id;
+  $('#profTitle').textContent = u.username; $('#profBack').hidden = isMe; $('#profMenu').hidden = !isMe;
+  const posts = S.posts.filter(p => p.userId===u.id);
+  const followers = isMe ? DEMO_IDS.filter(id => S.users[id]).length : (S.following.includes(u.id) ? 1 : 0) + 2;
+  const followingN = isMe ? S.following.length : 1 + (u.id.length % 3);
+  const hasStory = liveStories().some(s => s.userId===u.id);
+  const shown = S.profTab==='saved' ? S.posts.filter(p => S.saved.includes(p.id)) : posts;
+  const following = S.following.includes(u.id);
+  $('#profile').innerHTML = `<div class="prof">
+      <div class="prof-top"><button id="profAva" aria-label="${hasStory?'Дидани сторис':'Сурати профил'}">${ava(u,86,hasStory?'ring':false)}</button>
+        <div class="stats"><div><b>${posts.length}</b><span>пост</span></div><div><b>${followers}</b><span>пайрав</span></div><div><b>${followingN}</b><span>пайравӣ</span></div></div></div>
+      <div class="bio"><b>${esc(u.name)}</b>${u.bio ? rich(u.bio) : ''}</div>
+      <div class="prof-btns">${isMe
+        ? `<button class="btn" id="editProf">Таҳрири профил</button><button class="btn" id="shareProf">Мубодилаи профил</button>`
+        : `<button class="btn ${following?'':'primary'}" id="followBtn">${following?'Пайравӣ мекунед ✓':'Пайравӣ кардан'}</button>`}</div>
+    </div>
+    ${isMe ? `<div class="tabs" role="tablist"><button role="tab" aria-selected="${S.profTab==='posts'}" class="${S.profTab==='posts'?'on':''}" data-tab="posts" aria-label="Постҳо">${ICON.grid}</button><button role="tab" aria-selected="${S.profTab==='saved'}" class="${S.profTab==='saved'?'on':''}" data-tab="saved" aria-label="Захирашуда">${ICON.save}</button></div>` : '<div class="tabs"></div>'}
+    ${shown.length ? `<div class="grid">${gridHTML(shown)}</div>` :
+      S.profTab==='saved' && isMe ? `<div class="empty"><div class="circle">${ICON.save}</div><h3>Захира кунед</h3><p>Постҳоеро, ки мехоҳед дубора бинед, захира кунед. Онҳо танҳо барои шумо намоён мешаванд.</p></div>` :
+      isMe ? `<div class="empty"><div class="circle">${ICON.camera}</div><h3>Аввалин суратро мубодила кунед</h3><p>Суратҳое, ки нашр мекунед, дар профили шумо пайдо мешаванд.</p><button class="btn primary" onclick="startCreate()">Илова кардани пост</button></div>` :
+      `<div class="empty"><div class="circle">${ICON.camera}</div><h3>Ҳоло пост нест</h3></div>`}`;
+  $('#profAva').onclick = () => { if (hasStory){ const g = storyGroups(); const i = g.findIndex(x => x.userId===u.id); if (i>=0) openStories(g, i); else openStories([{userId:u.id, items:liveStories().filter(s=>s.userId===u.id)}], 0); } else if (isMe) editProfile(); };
+  $('#profile').querySelectorAll('[data-tab]').forEach(b => b.onclick = () => { S.profTab = b.dataset.tab; renderProfile(); });
+  if (isMe){ $('#editProf').onclick = editProfile; $('#shareProf').onclick = async () => { const t = `Маро дар Лаҳза пайдо кунед: @${u.username}`; try { if (navigator.share) await navigator.share({text:t}); else { await navigator.clipboard.writeText(t); toast('Нусха гирифта шуд'); } } catch {} }; }
+  else $('#followBtn').onclick = () => toggleFollow(u.id);
+}
+$('#profBack').onclick = () => go('home');
+function editProfile(){
+  let newAva = null;
+  openSheet(`<div class="sheet-h">${closeBtn}<h2>Таҳрири профил</h2><button class="txt-btn" id="epSave">Нигоҳ доштан</button></div>
+    <div class="sheet-b">
+      <div class="ava-pick" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px"><img id="epAva" class="ava" src="${S.me.avatar}" width="86" height="86" alt="Сурати профил"><button style="color:var(--link);font-weight:650" id="epAvaBtn">Иваз кардани сурат</button></div>
+      <div class="field"><label for="epName">Ном</label><input id="epName" maxlength="40" value="${esc(S.me.name)}"></div>
+      <div class="field"><label for="epUser">Номи корбар</label><input id="epUser" maxlength="30" autocapitalize="off" value="${esc(S.me.username)}"><div class="err" id="epErr"></div></div>
+      <div class="field"><label for="epBio">Дар бораи худ</label><textarea id="epBio" rows="3" maxlength="150">${esc(S.me.bio||'')}</textarea><div class="hint">То 150 аломат</div></div>
+    </div>`, {full:true});
+  $('#epAvaBtn').onclick = () => { S.onAva = d => { newAva = d; $('#epAva').src = d; }; $('#fileAva').click(); };
+  $('#epUser').oninput = () => $('#epErr').textContent = '';
+  $('#epUser').onblur = () => $('#epErr').textContent = validUsername($('#epUser').value, S.me.id) || '';
+  $('#epSave').onclick = async () => {
+    const un = $('#epUser').value.trim().toLowerCase(), err = validUsername(un, S.me.id);
+    if (err) { $('#epErr').textContent = err; $('#epUser').focus(); return; }
+    Object.assign(S.me, {name:$('#epName').value.trim() || un, username:un, bio:$('#epBio').value.trim()}); if (newAva) S.me.avatar = newAva;
+    S.users[S.me.id] = S.me; await saveMeta(); closeSheet(); $('#navAva').src = S.me.avatar; renderProfile(); toast('Профил навсозӣ шуд');
+  };
+}
+function validUsername(v, selfId){
+  v = v.trim().toLowerCase();
+  if (!v) return 'Номи корбарро нависед.';
+  if (!/^[a-z0-9._]{3,30}$/.test(v)) return 'Аз 3 то 30 ҳарфи лотинӣ, рақам, нуқта ё «_» истифода баред.';
+  if (Object.values(S.users).some(u => u.username === v && u.id !== selfId)) return 'Ин ном аллакай банд аст — дигарашро интихоб кунед.';
+  return '';
+}
+$('#fileAva').onchange = async e => { const f = e.target.files[0]; e.target.value = ''; if (!f) return; try { S.onAva?.(await processImage(f, 'square', 320)); } catch { toast('Суратро кушода натавонистем.'); } };
+
+$('#profMenu').onclick = () => openSheet(`<div class="menu">
+  <button id="sDark">${S.dark?'Реҷаи равшан':'Реҷаи торик'}</button>
+  <button id="sSaved">Захирашуда</button>
+  <button id="sExport">Нусхаи эҳтиётӣ (боргирӣ)</button>
+  <button id="sImport">Барқарор кардан аз нусха</button>
+  <button class="red" id="sReset">Нест кардани ҳамаи маълумот</button>
+  <button data-close>Пӯшидан</button></div>`);
+document.addEventListener('click', async e => {
+  const id = e.target.id;
+  if (id==='sDark'){ S.dark = !S.dark; applyTheme(); await saveMeta(); closeSheet(); }
+  else if (id==='sSaved'){ closeSheet(); S.profTab='saved'; go('profile', {keepTab:true}); }
+  else if (id==='sExport'){ closeSheet(); exportData(); }
+  else if (id==='sImport'){ closeSheet(); $('#fileImport').click(); }
+  else if (id==='sReset'){
+    openSheet(`<div style="padding:22px 18px;text-align:center"><h2 style="margin:0 0 8px;font-size:18px">Ҳамаи маълумот нест карда шавад?</h2><p style="color:var(--muted);margin:0 0 18px">Профил, ${S.posts.filter(p=>p.userId===S.me.id).length} пост ва сторисҳои шумо аз ин дастгоҳ ҳамеша нест мешаванд. Аввал нусхаи эҳтиётӣ гиред.</p></div>
+      <div class="menu"><button class="red" id="sResetYes">Нест кардани ҳама</button><button data-close>Бекор кардан</button></div>`);
+  }
+  else if (id==='sResetYes'){ await clear('posts'); await clear('stories'); await clear('kv'); location.reload(); }
+});
+function applyTheme(){ document.body.classList.toggle('dark', S.dark); document.querySelector('meta[name=theme-color]').content = S.dark ? '#0b0c0f' : '#ffffff'; }
+async function exportData(){
+  const data = {app:'lahza', v:1, exportedAt:new Date().toISOString(), meta:await kvGet('meta'), posts:await all('posts'), stories:await all('stories')};
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(data)], {type:'application/json'}));
+  a.download = `lahza-backup-${new Date().toISOString().slice(0,10)}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  toast('Нусхаи эҳтиётӣ боргирӣ шуд');
+}
+$('#fileImport').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  try {
+    const d = JSON.parse(await f.text()); if (d.app !== 'lahza' || !d.meta) throw 0;
+    if (!confirm('Маълумоти ҷорӣ бо нусхаи эҳтиётӣ иваз карда шавад?')) return;
+    await clear('posts'); await clear('stories'); await kvSet('meta', d.meta);
+    for (const p of d.posts||[]) await put('posts', p); for (const s of d.stories||[]) await put('stories', s);
+    location.reload();
+  } catch { toast('Ин файл нусхаи эҳтиётии Лаҳза нест. Файли дигарро интихоб кунед.'); }
+};
+
+/* ================= Onboarding ================= */
+let onbAva = null;
+function showOnboarding(){
+  go('onb');
+  const upd = () => { if (!onbAva) $('#onbAva').src = defaultAva($('#onbName').value || '?'); };
+  upd(); $('#onbName').oninput = upd;
+  $('#onbAvaBtn').onclick = () => { S.onAva = d => { onbAva = d; $('#onbAva').src = d; }; $('#fileAva').click(); };
+  $('#onbUser').oninput = () => $('#onbErr').textContent = '';
+  $('#onbUser').onblur = () => { if ($('#onbUser').value) $('#onbErr').textContent = validUsername($('#onbUser').value) || ''; };
+  $('#onbForm').onsubmit = async e => {
+    e.preventDefault();
+    const un = $('#onbUser').value.trim().toLowerCase(), err = validUsername(un);
+    if (err){ $('#onbErr').textContent = err; $('#onbUser').focus(); return; }
+    const name = $('#onbName').value.trim() || un;
+    S.me = {id:'me_'+uid(), name, username:un, bio:'', avatar: onbAva || defaultAva(name)};
+    S.users[S.me.id] = S.me; await saveMeta(); await boot();
+  };
+}
+
+/* ================= Boot ================= */
+async function boot(){
+  const meta = await kvGet('meta');
+  if (meta) Object.assign(S, meta);
+  applyTheme();
+  if (!S.me){
+    // first run: seed demo accounts so the app isn't empty, then ask for a profile
+    if (!Object.keys(S.users).length){ await seedDemo(); await saveMeta(); }
+    return showOnboarding();
+  }
+  S.posts = (await all('posts')).sort((a,b) => b.createdAt - a.createdAt);
+  S.stories = await all('stories');
+  // drop expired stories
+  for (const s of S.stories.filter(s => Date.now()-s.createdAt >= DAY)) await del('stories', s.id);
+  S.stories = S.stories.filter(s => Date.now()-s.createdAt < DAY);
+  $('#navAva').src = S.me.avatar;
+  updateDots(); go('home');
+}
+openDB().then(d => { db = d; return boot(); }).catch(err => {
+  document.body.innerHTML = `<div class="empty"><h3>Барнома кушода нашуд</h3><p>Браузер иҷозати нигоҳ доштани маълумотро намедиҳад (масалан, дар реҷаи махфӣ). Онро дар реҷаи оддӣ кушоед.</p></div>`;
+  console.error(err);
+});
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('service-worker.js').catch(() => {});
+</script>
+</body>
+</html>
